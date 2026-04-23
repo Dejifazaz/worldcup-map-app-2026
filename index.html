@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><!DOCTYPE html>
+    <html>
+    <head>
+    <title>worldcup App</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel ="stylesheet" href="css/style.css">
+
+  <script async
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA40KRYT_gpPJzbN_ta-pdESQwsyVkhgn4&loading=async&callback=df_loadJSON&libraries=marker">
+  </script>
+
+  <style>
+
+
+    #map
+    {
+      width:600px;
+      height:600px;
+      border:thin solid #ccc;
+    }
+
+    #pele-store
+    {
+      width:400px;
+      height:200px;
+    }
+
+    #pele-store img
+    {
+      clear:both;
+      float:left;
+      width: 150px;
+      border-radius:100px;
+      margin: 20px;
+      margin-top:0px;
+      border:thin solid #CCC;
+    }
+  </style>
+
+
+  <nav>
+    <ul class="sidebar">
+      <li onclick=hideSidebar()><a href="#"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></a> </li>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="explore.html">Explore</a></li>
+      <li><a href="#">Route</a></li>
+    </ul>
+    <ul class="navbar">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="explore.html">Explore</a></li>
+      <li><a href="#">Route</a></li>
+
+      <li onclick=showSidebar()><a href="#"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg></a></li>
+
+    </ul>
+  </nav>
+  <script>
+
+
+
+    function showSidebar(){
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.style.display = 'flex'
+    }
+
+    function hideSidebar(){
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.style.display = 'none'
+    }
+
+    let peleStore = `<div id="pele-store">
+                                <h1>Pele Soccer Store</h1>
+                                <img src="../worldcupclone2/images/attractions/pele-store.png" width="150">
+                                <p>The world's greatest Soccer store!</p>
+                                <a href="https://pelesoccer.com/">Visit Website</a>
+                             </div>`;
+
+
+
+    let df_locations = [];
+
+    function df_loadJSON()
+    {
+      fetch("data/places.json")
+              .then(response => response.json())
+              .then(data =>
+              {
+                console.log("JSON Loaded:", data);
+
+
+                df_locations = data.map(place => [
+                  `
+                        <div style="width:200px">
+                            <h3>${place.name}</h3>
+                            <img src="${place.image}" style="width:100%; border-radius:8px"/>
+                            <p><strong>Type:</strong> ${place.type}</p>
+                            <p>${place.description}</p>
+                            <p><strong>Country:</strong> ${place.country}</p>
+                        </div>
+                        `,
+                  place.lat,
+                  place.lng,
+                  place.markerType
+                ]);
+
+                console.log("Converted Locations:", df_locations);
+
+                loadMap();
+
+              })
+              .catch(error =>
+              {
+                console.error("Error loading JSON:", error);
+
+              });
+    }
+
+    function loadMap()
+    {
+
+      const CONTENT = 0,
+              LATITUDE = 1,
+              LONGITUDE = 2,
+              MARKER_TYPE = 3
+
+      let locations = df_locations;
+
+      let map = new google.maps.Map(document.getElementById("map"), {
+        mapId: "MY_MAP_ID",
+        zoom: 4,
+        center: new google.maps.LatLng(locations[0][LATITUDE], locations[0][LONGITUDE]),
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControlOptions: {
+          mapTypeIds: ["roadmap", "satellite", "hide_poi"]
+        }
+      })
+
+      hidePointsOfInterest(map)
+
+      let infoWindow = null
+
+      locations.forEach(location =>
+      {
+        let markerOptions = {
+          position: new google.maps.LatLng(location[LATITUDE], location[LONGITUDE]),
+          map: map
+        };
+
+        if(location[MARKER_TYPE] === "pele")
+        {
+          let markerDiv = document.createElement("div");
+          markerDiv.style.width = "20px";
+          markerDiv.style.height = "20px";
+          markerDiv.style.background = "blue";
+          markerDiv.style.borderRadius = "50%";
+
+          markerOptions.content = markerDiv;
+        }
+
+        let marker = new google.maps.marker.AdvancedMarkerElement(markerOptions)
+
+        if(infoWindow === null)
+        {
+          infoWindow = new google.maps.InfoWindow()
+        }
+
+        google.maps.event.addListener(marker, "click", () => {
+          infoWindow.setContent(location[CONTENT])
+          infoWindow.open(map, marker)
+        })
+      })
+    }
+
+    function hidePointsOfInterest(map)
+    {
+      let styles = [
+        {
+          "featureType": "poi",
+          "stylers": [{ "visibility": "off" }]
+        }
+      ]
+
+      let styledMapType = new google.maps.StyledMapType(styles, {
+        name: "POI Hidden",
+        alt: "Hide Points of Interest"
+      })
+      map.mapTypes.set("hide_poi", styledMapType)
+
+      map.setMapTypeId("hide_poi")
+    }
+
+    df_loadJSON();
+  </script>
+</head>
+
+<body>
+<div id="map"></div>
+
+<p>Use the "Map", "Satellite" and "Hide POI" buttons to show or hide points of interest on the map.</p>
+
+</body>
+</html>

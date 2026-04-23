@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>World Cup App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Google Maps -->
+    <script async
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA40KRYT_gpPJzbN_ta-pdESQwsyVkhgn4&loading=async&callback=loadMap&libraries=marker">
+    </script>
+
+    <style>
+        #map {
+            width:600px;
+            height:600px;
+            border:thin solid #ccc;
+        }
+
+        #pele-store {
+            width:400px;
+            height:200px;
+        }
+
+        #pele-store img {
+            clear:both;
+            float:left;
+            width: 150px;
+            border-radius:100px;
+            margin: 20px;
+            margin-top:0px;
+            border:thin solid #CCC;
+        }
+    </style>
+
+    <script>
+        function showSidebar(){
+            document.querySelector('.sidebar').style.display = 'flex';
+        }
+
+        function hideSidebar(){
+            document.querySelector('.sidebar').style.display = 'none';
+        }
+
+        function loadMap()
+        {
+            const CONTENT = 0,
+                LATITUDE = 1,
+                LONGITUDE = 2;
+
+            let peleStore = `<div id="pele-store">
+                                <h1>Pele Soccer Store</h1>
+                                <img src="../worldcupclone2/images/attractions/pele-store.png" width="150">
+                                <p>The world's greatest Soccer store!</p>
+                                <a href="https://pelesoccer.com/">Visit Website</a>
+                             </div>`;
+
+            let dkitContent = `<div>
+                                <h1>Dundalk Institute of Technology</h1>
+                                <img src="images/dkit_photo.png" width="150">
+                                <p>DkIT is the best place to study computing in Ireland</p>
+                                <a href="https://www.dkit.ie">Visit Website</a>
+                               </div>`;
+
+            let locations = [
+
+                [peleStore, 40.7580, -73.9855]
+
+            ];
+
+            let map = new google.maps.Map(document.getElementById("map"), {
+                mapId: "MY_MAP_ID",
+                zoom: 5,
+                center: new google.maps.LatLng(locations[0][LATITUDE], locations[0][LONGITUDE]),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+
+            let infoWindow = new google.maps.InfoWindow();
+
+            locations.forEach(location =>
+            {
+                let marker = new google.maps.marker.AdvancedMarkerElement({
+                    position: new google.maps.LatLng(location[LATITUDE], location[LONGITUDE]),
+                    map: map
+                });
+
+                google.maps.event.addListener(marker, "click", () =>
+                {
+                    infoWindow.setContent(location[CONTENT]);
+                    infoWindow.open(map, marker);
+                });
+            });
+        }
+    </script>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <ul class="sidebar">
+        <li onclick="hideSidebar()">Close</li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="explore.html">Explore</a></li>
+        <li><a href="#">Route</a></li>
+    </ul>
+
+    <ul class="navbar">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="explore.html">Explore</a></li>
+        <li><a href="#">Route</a></li>
+        <li onclick="showSidebar()">Menu</li>
+    </ul>
+</nav>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<p>Click a marker to see details.</p>
+
+</body>
+</html>

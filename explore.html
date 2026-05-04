@@ -2,123 +2,187 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>World Cup App</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore - World Cup Travel</title>
 
     <link rel="stylesheet" href="css/style.css">
 
-    <!-- Google Maps -->
-    <script async
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA40KRYT_gpPJzbN_ta-pdESQwsyVkhgn4&loading=async&callback=loadMap&libraries=marker,places">
-    </script>
-
     <style>
-        #map {
-            width:600px;
-            height:600px;
-            border:thin solid #ccc;
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
         }
 
-        #pele-store {
-            width:400px;
-            height:200px;
+        /* NAVBAR */
+        nav {
+            background: #020617;
+            padding: 10px 20px;
         }
 
-        #pele-store img {
-            clear:both;
-            float:left;
-            width: 150px;
-            border-radius:100px;
-            margin: 20px;
-            margin-top:0px;
-            border:thin solid #CCC;
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            list-style: none;
+            padding: 0;
+        }
+
+        .navbar li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* FILTER */
+        .filterBar {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .filterBar button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filterBar button:hover {
+            background: #1d4ed8;
+        }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* CARD */
+        .card {
+            background: #020617;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+        }
+
+        .card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+
+        .cardContent {
+            padding: 15px;
+        }
+
+        .cardContent h3 {
+            margin: 0;
+        }
+
+        .typeTag {
+            font-size: 12px;
+            background: #2563eb;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        /* MOBILE */
+        @media(max-width:600px){
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 
     <script>
-        function showSidebar(){
-            document.querySelector('.sidebar').style.display = 'flex';
-        }
+        let placesData = [];
 
-        function hideSidebar(){
-            document.querySelector('.sidebar').style.display = 'none';
-        }
-
-        function loadMap()
+        function loadPlaces()
         {
-            const CONTENT = 0,
-                LATITUDE = 1,
-                LONGITUDE = 2;
-
-            let peleStore = `<div id="pele-store">
-                                <h1>Pele Soccer Store</h1>
-                                <img src="../worldcupclone2/images/attractions/pele-store.png" width="150">
-                                <p>The world's greatest Soccer store!</p>
-                                <a href="https://pelesoccer.com/">Visit Website</a>
-                             </div>`;
-
-            let dkitContent = `<div>
-                                <h1>Dundalk Institute of Technology</h1>
-                                <img src="images/dkit_photo.png" width="150">
-                                <p>DkIT is the best place to study computing in Ireland</p>
-                                <a href="https://www.dkit.ie">Visit Website</a>
-                               </div>`;
-
-            let locations = [
-
-                [peleStore, 40.7580, -73.9855]
-
-            ];
-
-            let map = new google.maps.Map(document.getElementById("map"), {
-                mapId: "MY_MAP_ID",
-                zoom: 5,
-                center: new google.maps.LatLng(locations[0][LATITUDE], locations[0][LONGITUDE]),
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            });
-
-            let infoWindow = new google.maps.InfoWindow();
-
-            locations.forEach(location =>
-            {
-                let marker = new google.maps.marker.AdvancedMarkerElement({
-                    position: new google.maps.LatLng(location[LATITUDE], location[LONGITUDE]),
-                    map: map
-                });
-
-                google.maps.event.addListener(marker, "click", () =>
+            fetch("data/places.json")
+                .then(res => res.json())
+                .then(data =>
                 {
-                    infoWindow.setContent(location[CONTENT]);
-                    infoWindow.open(map, marker);
-                });
+                    placesData = data;
+                    displayPlaces(data);
+                })
+                .catch(err => console.error(err));
+        }
+
+        function displayPlaces(data)
+        {
+            let container = document.getElementById("grid");
+            container.innerHTML = "";
+
+            data.forEach(place =>
+            {
+                let card = `
+                    <div class="card">
+                        <img src="${place.image}">
+                        <div class="cardContent">
+                            <span class="typeTag">${place.type}</span>
+                            <h3>${place.name}</h3>
+                            <p>${place.description}</p>
+                            <small>${place.country}</small>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML += card;
             });
         }
+
+        function filterPlaces(type)
+        {
+            if(type === "all")
+            {
+                displayPlaces(placesData);
+            }
+            else
+            {
+                let filtered = placesData.filter(p => p.type === type);
+                displayPlaces(filtered);
+            }
+        }
+
+        window.onload = loadPlaces;
     </script>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
+<!-- NAV -->
 <nav>
-    <ul class="sidebar">
-        <li onclick="hideSidebar()">Close</li>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="explore.html">Explore</a></li>
-        <li><a href="#">Route</a></li>
-    </ul>
-
     <ul class="navbar">
         <li><a href="index.html">Home</a></li>
         <li><a href="explore.html">Explore</a></li>
-        <li><a href="#">Route</a></li>
-        <li onclick="showSidebar()">Menu</li>
+        <li><a href="route.html">Route</a></li>
     </ul>
 </nav>
 
-<!-- MAP -->
-<div id="map"></div>
 
-<p>Click a marker to see details.</p>
+<div class="filter">
+    <button onclick="filterPlaces('all')">All</button>
+    <button onclick="filterPlaces('stadium')">Stadiums</button>
+    <button onclick="filterPlaces('restaurant')">Restaurants</button>
+    <button onclick="filterPlaces('hotel')">Hotels</button>
+    <button onclick="filterPlaces('attraction')">Attractions</button>
+</div>
+
+
+<div id="grid" class="grid"></div>
 
 </body>
 </html>
